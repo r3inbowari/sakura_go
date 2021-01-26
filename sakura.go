@@ -29,7 +29,7 @@ func Init() {
 	Blue("                                                __/ |             ")
 	Blue("                                               |___/              ")
 
-	Blue(" -- --- -- --- . -. --. .. -. . version: 1.0.2 author: r3inbowari")
+	Blue(" -- --- -- --- . -. --. .. -. . version: 1.0.3 author: r3inbowari")
 	Blue("")
 	Info("[SYS] system init")
 
