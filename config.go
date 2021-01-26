@@ -20,6 +20,8 @@ type LocalConfig struct {
 	CacheTime   time.Time `json:"-"`          // 缓存时间
 	LoggerLevel *string   `json:"log_level"`  // 日志等级
 	JwtSecret   string    `json:"jwt_secret"` // jwt private key
+	RedisURL    string    `json:"redis_url"`  // redis
+	RedisPass   string    `json:"redis_pass"` // redis pwd
 }
 
 var config = new(LocalConfig)

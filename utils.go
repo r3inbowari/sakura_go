@@ -53,12 +53,12 @@ var SearchDoc sync.Map
 func GetSearchResult(url string) *goquery.Document {
 	md5Stream := GetMD5(url)
 	if v, ok := SearchDoc.Load(md5Stream); ok {
-		Info("提取地址: " + url)
+		Info("[Cache] found a snapshot -> " + url)
 		return v.(*goquery.Document)
 	}
 	doc, _ := goquery.NewDocument(url)
 	SearchDoc.Store(md5Stream, doc)
-	Info("缓存地址: " + url)
+	Info("[Cache] snapshot saved -> " + url)
 	return doc
 }
 
@@ -100,5 +100,27 @@ func JsonBind(ptr interface{}, rq *http.Request) error {
 		return nil
 	} else {
 		return errors.New("empty request body")
+	}
+}
+
+/*
+ * 重定向检查
+ */
+func CheckURL(baseHost string) string {
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	for {
+		res, err := client.Get(baseHost)
+		if err != nil {
+			return baseHost
+		}
+		if res.StatusCode != 302 {
+			return baseHost
+		}
+		baseHost = res.Header.Get("Location")
 	}
 }
