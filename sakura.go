@@ -12,9 +12,7 @@ import (
 	"time"
 )
 
-/*
- * 计划任务
- */
+// LatestHome /*
 var LatestHome *goquery.Document // 最新主页快照
 var cacheStart time.Time
 var RDB Snapshot
