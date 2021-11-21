@@ -39,6 +39,14 @@ go build -ldflags "-X 'main.major=%major%' -X 'main.minor=%minor%'-X 'main.patch
 echo Done %appName%_%GOOS%_%GOARCH%_%buildVersion%
 set upxArgs=%upxArgs% %appName%_%GOOS%_%GOARCH%_%buildVersion%
 
+set GOOS=linux
+set GOARCH=amd64
+go env -w GOOS=linux
+go env -w GOARCH=amd64
+go build -ldflags "-X 'main.major=%major%' -X 'main.minor=%minor%'-X 'main.patch=%patch%' -X 'main.releaseVersion=%buildVersion%' -X 'main.mode=%mode%' -X 'main.goVersion=%goVersion%' -X 'main.gitHash=%gitHash%' -X 'main.buildTime=%buildTime%'" -o ../build/%appName%_%GOOS%_%GOARCH%_%buildVersion%
+echo Done %appName%_%GOOS%_%GOARCH%_%buildVersion%
+set upxArgs=%upxArgs% %appName%_%GOOS%_%GOARCH%_%buildVersion%
+
 set GOOS=windows
 set GOARCH=amd64
 go env -w GOOS=windows
