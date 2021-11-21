@@ -24,7 +24,6 @@ func main() {
 	Sakura.InitConfig()
 	Sakura.InitUpdate(buildTime, mode, releaseVersion, gitHash, major, minor, patch, "sakura", nil)
 	Sakura.InitLogger(Sakura.Up.BuildMode, AppInfo)
-
 	Sakura.Init()
 }
 

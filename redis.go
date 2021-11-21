@@ -4,7 +4,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-redis/redis/v8"
 	"github.com/robfig/cron"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"os"
 	"strconv"
 	"time"
 )
@@ -15,6 +17,11 @@ type Snapshot struct {
 }
 
 func InitCacheService() *Snapshot {
+	if GetConfig(false).RedisURL == "" || GetConfig(false).RedisPass == "" {
+		logrus.Error("[Cache] need to set redis config")
+		time.Sleep(time.Second * 5)
+		os.Exit(77)
+	}
 	var sp = Snapshot{}
 	sp.ctx = context.Background()
 	sp.rdb = redis.NewClient(&redis.Options{
@@ -23,6 +30,12 @@ func InitCacheService() *Snapshot {
 		DB:       0,
 	})
 	Log.Info("[Cache] Redis pre-connected -> " + GetConfig(false).RedisURL)
+	_, err := sp.rdb.Ping(context.Background()).Result()
+	if err != nil {
+		Log.WithFields(logrus.Fields{"err": err.Error()}).Error("[Cache] init redis failed")
+		time.Sleep(time.Second * 5)
+		os.Exit(77)
+	}
 	return &sp
 }
 

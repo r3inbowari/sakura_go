@@ -2,7 +2,7 @@
   "check_link": "",
   "auto_update": true,
   "redis_url": "r3in.top:6379",
-  "redis_pass": "15598870762",
+  "redis_pass": "155988707621",
   "finger": "532ca3dd-2104-4799-8fd2-9f4b16e5cdc9",
   "api_addr": ":9091",
   "log_level": "debug",
