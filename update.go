@@ -335,18 +335,21 @@ func InitUpdate(buildTime, buildMode string, ver, hash string, major, minor, pat
 	Up = &retUpdate
 
 	var err error
-	if Up.BuildMode != "DEV" {
+	if Up.BuildMode == "REL" {
 		retUpdate.RunPath, err = filepath.Abs(filepath.Dir(os.Args[0]))
 		if err != nil {
 			Log.Error("[UP] unknown panic")
 			time.Sleep(time.Second * 5)
 			os.Exit(1005)
 		}
-	} else {
+	} else if Up.BuildMode == "DEV" {
 		// 开发环境路径
 		// MACOS
 		// retUpdate.RunPath = "/Users/r3inb/Downloads/meiwobuxing"
 		// Windows
+		retUpdate.RunPath = "C:\\Users\\inven\\Desktop\\meiwobuxing"
+	} else if Up.BuildMode == "AliyunFC" {
+		// 阿里云函数计算环境
 		retUpdate.RunPath = "C:\\Users\\inven\\Desktop\\meiwobuxing"
 	}
 	return &retUpdate

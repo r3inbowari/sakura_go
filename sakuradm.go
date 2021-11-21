@@ -162,10 +162,18 @@ func DMSakuraHomepageSnapshotCron() {
 }
 
 func (p *Player) DMSakuraGetPlayer() error {
-	get, err := RDB.Get(GetMD5(p.ID + strconv.Itoa(int(p.Sid)) + strconv.Itoa(int(p.Nid))))
-	if err == nil {
-		err = json.Unmarshal([]byte(get), p)
-		return err
+	if Up.BuildMode != "AliyunFC" {
+		get, err := RDB.Get(GetMD5(p.ID + strconv.Itoa(int(p.Sid)) + strconv.Itoa(int(p.Nid))))
+		if err == nil {
+			err = json.Unmarshal([]byte(get), p)
+			return err
+		}
+	} else {
+		v, ok := SearchDoc.Load(GetMD5(p.ID + strconv.Itoa(int(p.Sid)) + strconv.Itoa(int(p.Nid))))
+		if ok {
+			err := json.Unmarshal([]byte(v.(string)), p)
+			return err
+		}
 	}
 
 	return QueryGet(fmt.Sprintf("%svodplay/%s-%d-%d.html", DMSakuraHost, p.ID, p.Sid, p.Nid), func(doc *goquery.Document) error {
@@ -201,7 +209,11 @@ func (p *Player) DMSakuraGetPlayer() error {
 		if err != nil {
 			return err
 		}
-		RDB.SetEx(GetMD5(p.ID+strconv.Itoa(int(p.Sid))+strconv.Itoa(int(p.Nid))), string(marshal), time.Hour)
+		if Up.BuildMode != "AliyunFC" {
+			RDB.SetEx(GetMD5(p.ID+strconv.Itoa(int(p.Sid))+strconv.Itoa(int(p.Nid))), string(marshal), time.Hour)
+		} else {
+			AddCache(GetMD5(p.ID+strconv.Itoa(int(p.Sid))+strconv.Itoa(int(p.Nid))), string(marshal), time.Hour)
+		}
 		return nil
 	})
 }

@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/aliyun/fc-runtime-go-sdk v0.0.2
 	github.com/fatih/color v1.13.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gorilla/mux v1.8.0

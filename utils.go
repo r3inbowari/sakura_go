@@ -55,7 +55,7 @@ func GetSearchResult(url string) (*goquery.Document, error) {
 	var d *goquery.Document
 	err := QueryGet(url, func(doc *goquery.Document) error {
 		d = doc
-		AddCache(md5Stream, doc)
+		AddCache(md5Stream, doc, time.Minute*10)
 		return nil
 	})
 	if err != nil {
@@ -64,9 +64,9 @@ func GetSearchResult(url string) (*goquery.Document, error) {
 	return d, nil
 }
 
-func AddCache(id string, v interface{}) {
+func AddCache(id string, v interface{}, duration time.Duration) {
 	SearchDoc.Store(id, v)
-	err := GetTimeWheel().AddTask(time.Minute*10, 1, id, TaskData{"id": id}, CleanTask)
+	err := GetTimeWheel().AddTask(duration, 1, id, TaskData{"id": id}, CleanTask)
 	if err != nil {
 		Log.WithFields(logrus.Fields{"id": id}).Warn("[Cache] add task failed...")
 	}

@@ -3,6 +3,8 @@ package Sakura
 import (
 	"context"
 	"fmt"
+	"github.com/aliyun/fc-runtime-go-sdk/fc"
+	"github.com/aliyun/fc-runtime-go-sdk/fccontext"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/wuwenbao/gcors"
@@ -20,7 +22,7 @@ type Server struct {
 	s      *http.Server
 }
 
-func CLIApplication() {
+func ServerMap() {
 	Log.Info("[BCS] sakura CLI is running")
 	BiliServer = NewServer()
 	BiliServer.Map("/version", HandleVersion)
@@ -31,6 +33,18 @@ func CLIApplication() {
 	BiliServer.Map("/search", HandleSearch)
 	BiliServer.Map("/detail/{id}", HandleDetail)
 	BiliServer.router.Use(loggingMiddleware)
+}
+
+func CLIApplication() {
+	ServerMap()
+	if Up.BuildMode == "AliyunFC" {
+		fc.StartHttp(AFCServer)
+	} else {
+		NormalServer()
+	}
+}
+
+func NormalServer() {
 	err := BiliServer.start()
 	if strings.HasSuffix(err.Error(), "normally permitted.") || strings.Index(err.Error(), "bind") != -1 {
 		Log.WithFields(logrus.Fields{"err": err.Error()}).Error("[BCS] Only one usage of each socket address is normally permitted.")
@@ -40,6 +54,17 @@ func CLIApplication() {
 	// goroutine block here not need sleep
 	Log.WithFields(logrus.Fields{"err": err.Error()}).Info("[BCS] Service will be terminated soon")
 	time.Sleep(time.Second * 10)
+}
+
+// AFCServer 阿里云函数计算服务
+func AFCServer(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+	lc, _ := fccontext.FromContext(ctx)
+	fmt.Printf("上下文: %#v\n", lc)
+	fmt.Printf("请求头: %#v\n", req.Header)
+	fmt.Printf("路由点: %#v\n", req.URL.String())
+	fmt.Printf("方法名: %#v\n", req.Method)
+	BiliServer.router.ServeHTTP(w, req)
+	return nil
 }
 
 func Shutdown(ctx context.Context) {
@@ -97,6 +122,9 @@ func (s *Server) Map(path string, f func(http.ResponseWriter,
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now().UnixNano()
+		if Up.BuildMode == "AliyunFC" {
+			DMSakuraHomepageSnapshotCron()
+		}
 		unescape, err := url.QueryUnescape(r.RequestURI)
 		if err != nil {
 			Log.Error("error route")
