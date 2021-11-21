@@ -1,4 +1,4 @@
-module sakura_go
+module github.com/r3inbowari/sakura_go
 
 go 1.14
 

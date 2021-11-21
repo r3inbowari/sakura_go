@@ -1,9 +1,9 @@
 package main
 
 import (
+	Sakura "github.com/r3inbowari/sakura_go"
 	"os"
 	"runtime"
-	Sakura "sakura_go"
 	"strconv"
 )
 
