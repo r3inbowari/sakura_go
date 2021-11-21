@@ -4,45 +4,48 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"os"
 	"regexp"
-	"strconv"
 	"time"
 )
 
-/**
- * local config struct
- */
+// LocalConfig 配置
 type LocalConfig struct {
-	Finger      string    `json:"finger"`     // canvas指纹
-	MysqlArgs   string    `json:"mysql_args"` // canvas指纹
-	APIAddr     string    `json:"api_addr"`   // API服务ADDR
-	CacheTime   time.Time `json:"-"`          // 缓存时间
-	LoggerLevel *string   `json:"log_level"`  // 日志等级
-	JwtSecret   string    `json:"jwt_secret"` // jwt private key
-	RedisURL    string    `json:"redis_url"`  // redis
-	RedisPass   string    `json:"redis_pass"` // redis pwd
+	Finger      string    `json:"finger"`      // canvas指纹
+	APIAddr     string    `json:"api_addr"`    // API服务ADDR
+	CacheTime   time.Time `json:"-"`           // 缓存时间
+	LoggerLevel *string   `json:"log_level"`   // 日志等级
+	CheckLink   string    `json:"check_link"`  // 检查更新地址
+	AutoUpdate  bool      `json:"auto_update"` // 自动更新
+	RedisURL    string    `json:"redis_url"`
+	RedisPass   string    `json:"redis_pass"`
+}
+
+func InitConfig() {
+	if !Exists("bili.json") {
+		Log.Info("[FILE] Init user configuration")
+		var config LocalConfig
+		var l = "debug"
+		config.Finger = "532ca3dd-2104-4799-8fd2-9f4b16e5cdc9"
+		config.LoggerLevel = &l
+		config.APIAddr = ":9090"
+		config.AutoUpdate = true
+		_ = config.SetConfig()
+	}
 }
 
 var config = new(LocalConfig)
 var configPath = "bili.json"
 
-func InitConfig() {
-	Info("[CONF] Loading Config")
-	if !Exists("bili.json") {
-		var config LocalConfig
-		var l = "debug"
-		config.Finger = ""
-		config.LoggerLevel = &l
-		config.APIAddr = ":9090"
-		_ = config.SetConfig()
-	}
-}
-
-func GetConfig() *LocalConfig {
-	if config.CacheTime.Before(time.Now()) {
+// GetConfig 返回配置文件
+// imm 立即返回
+func GetConfig(imm bool) *LocalConfig {
+	if config.CacheTime.Before(time.Now()) || imm {
 		if err := LoadConfig(configPath, config); err != nil {
-			Info("loading file failed")
+			Log.Error("loading file failed")
+			time.Sleep(time.Second * 5)
+			os.Exit(76)
 			return nil
 		}
 		config.CacheTime = time.Now().Add(time.Second * 60)
@@ -50,49 +53,43 @@ func GetConfig() *LocalConfig {
 	return config
 }
 
-/**
- * save cnf/conf.json
- */
+// SetConfig 更新
 func (lc *LocalConfig) SetConfig() error {
 	fp, err := os.Create(configPath)
 	if err != nil {
-		Info("[CONF] loading file failed")
+		Log.WithFields(logrus.Fields{"err": err}).Error("loading file failed")
 	}
 	defer fp.Close()
 	data, err := json.Marshal(lc)
 	if err != nil {
-		Info("[CONF] marshal file failed")
+		Log.WithFields(logrus.Fields{"err": err}).Error("marshal file failed")
 	}
 	n, err := fp.Write(data)
 	if err != nil {
-		Info("[CONF] write file failed")
+		Log.WithFields(logrus.Fields{"err": err}).Error("write file failed")
 	}
-	Info("[CONF] already update config file | SIZE " + strconv.Itoa(n))
+	Log.WithFields(logrus.Fields{"size": n}).Info("[FILE] Update user configuration")
 	return nil
 }
 
 const configFileSizeLimit = 10 << 20
 
-/**
- * Load File
- * @param path 文件路径
- * @param dist 存放目标
- */
+// LoadConfig path 文件路径 dist 存放目标
 func LoadConfig(path string, dist interface{}) error {
 	configFile, err := os.Open(path)
 	if err != nil {
-		Info("[CONF] Failed to open config file.")
+		Log.WithFields(logrus.Fields{"path": path, "err": err}).Error("Failed to open config file.")
 		return err
 	}
 
 	fi, _ := configFile.Stat()
 	if size := fi.Size(); size > (configFileSizeLimit) {
-		Info("[CONF] Config file size exceeds reasonable limited")
+		Log.WithFields(logrus.Fields{"path": path, "size": size}).Error("Config file size exceeds reasonable limited")
 		return errors.New("limited")
 	}
 
 	if fi.Size() == 0 {
-		Info("[CONF] Config file is empty, skipping")
+		Log.WithFields(logrus.Fields{"path": path, "size": 0}).Error("Config file is empty, skipping")
 		return errors.New("empty")
 	}
 
@@ -100,7 +97,7 @@ func LoadConfig(path string, dist interface{}) error {
 	_, err = configFile.Read(buffer)
 	buffer, err = StripComments(buffer)
 	if err != nil {
-		Info("[CONF] Failed to strip comments from json")
+		Log.WithFields(logrus.Fields{"err": err}).Error("Failed to strip comments from json")
 		return err
 	}
 
@@ -108,15 +105,13 @@ func LoadConfig(path string, dist interface{}) error {
 
 	err = json.Unmarshal(buffer, &dist)
 	if err != nil {
-		Info("Failed unmarshalling json")
+		Log.WithFields(logrus.Fields{"err": err}).Error("Failed unmarshalling json")
 		return err
 	}
 	return nil
 }
 
-/**
- * 注释清除
- */
+// StripComments 注释清除
 func StripComments(data []byte) ([]byte, error) {
 	data = bytes.Replace(data, []byte("\r"), []byte(""), 0)
 	lines := bytes.Split(data, []byte("\n"))

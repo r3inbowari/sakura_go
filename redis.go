@@ -14,20 +14,28 @@ type Snapshot struct {
 	ctx context.Context
 }
 
-func InitCacheService() Snapshot {
+func InitCacheService() *Snapshot {
 	var sp = Snapshot{}
 	sp.ctx = context.Background()
 	sp.rdb = redis.NewClient(&redis.Options{
-		Addr:     GetConfig().RedisURL,
-		Password: GetConfig().RedisPass,
+		Addr:     GetConfig(false).RedisURL,
+		Password: GetConfig(false).RedisPass,
 		DB:       0,
 	})
-	Info("[Cache] Redis pre-connected -> " + GetConfig().RedisURL)
-	return sp
+	Log.Info("[Cache] Redis pre-connected -> " + GetConfig(false).RedisURL)
+	return &sp
 }
 
-func (s *Snapshot) Set(key, value string) error {
+func (s *Snapshot) Set(key string, value interface{}) error {
 	err := s.rdb.Set(s.ctx, key, value, 0).Err()
+	return err
+}
+
+func (s *Snapshot) SetEx(key string, value interface{}, ex time.Duration) error {
+	cacheStart = time.Now()
+	err := s.rdb.Set(s.ctx, key, value, ex).Err()
+	spend := time.Now().UnixNano() - cacheStart.UnixNano()
+	Log.Info("[Cache] play link snapshot | " + strconv.Itoa(int(spend)/1e6) + "ms")
 	return err
 }
 
@@ -43,10 +51,10 @@ func (s *Snapshot) Get(key string) (string, error) {
 }
 
 func (s *Snapshot) UseCache() {
-	Info("[Cache] Cache service OPEN")
-	HomepageSnapshotCron()
+	Log.Info("[Cache] Cache service OPEN")
+	DMSakuraHomepageSnapshotCron()
 	c := cron.New()
-	_ = c.AddFunc("0 */10 * * * ?", HomepageSnapshotCron)
+	_ = c.AddFunc("0 */10 * * * ?", DMSakuraHomepageSnapshotCron)
 	c.Start()
 }
 
@@ -55,8 +63,8 @@ func HomepageSnapshotCron() {
 	var err error
 	LatestHome, err = goquery.NewDocument("http://www.yhdm.tv")
 	if err != nil {
-		Warn("[Cache] cache pull failed")
+		Log.Warn("[Cache] cache pull failed")
 	}
 	spend := time.Now().UnixNano() - cacheStart.UnixNano()
-	Info("[Cache] Homepage snapshot | " + strconv.Itoa(int(spend)/1e6) + "ms")
+	Log.Info("[Cache] Homepage snapshot | " + strconv.Itoa(int(spend)/1e6) + "ms")
 }
