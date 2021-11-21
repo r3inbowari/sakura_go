@@ -11,12 +11,13 @@ import (
 
 func ConfirmPermissions() {
 	id := GetID()
-	Log.Info("[SYS] Permissions key -> " + id)
 	for _, v := range Defs.PDigests {
 		if id == v {
+			Log.Infof("[SYS] Permissions key -> %s [verified]", id)
 			return
 		}
 	}
+	Log.Info("[SYS] Permissions key -> " + id)
 	ExitOops()
 }
 

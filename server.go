@@ -2,10 +2,12 @@ package Sakura
 
 import (
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/wuwenbao/gcors"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -19,10 +21,14 @@ type Server struct {
 }
 
 func CLIApplication() {
-	Log.Info("[BCS] MEIWOBUXING CLI PACKAGER is running")
+	Log.Info("[BCS] sakura CLI is running")
 	BiliServer = NewServer()
 	BiliServer.Map("/version", HandleVersion)
-
+	BiliServer.Map("/play/{id}/{sid}/{nid}", HandleGetPlayer)
+	BiliServer.Map("/rank", HandleRank)
+	BiliServer.Map("/new", HandleNew)
+	BiliServer.Map("/weeks/{index}", HandleWeeks)
+	BiliServer.Map("/search", HandleSearch)
 	BiliServer.router.Use(loggingMiddleware)
 	err := BiliServer.start()
 	if strings.HasSuffix(err.Error(), "normally permitted.") || strings.Index(err.Error(), "bind") != -1 {
@@ -89,8 +95,15 @@ func (s *Server) Map(path string, f func(http.ResponseWriter,
 
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		Log.Info("[BSC] route" + r.RemoteAddr + " " + r.RequestURI)
+		start := time.Now().UnixNano()
+		unescape, err := url.QueryUnescape(r.RequestURI)
+		if err != nil {
+			Log.Error("error route")
+			return
+		}
 		next.ServeHTTP(w, r)
+		end := time.Now().UnixNano()
+		Log.WithFields(logrus.Fields{"time": fmt.Sprintf("%dms", (end-start)/100000)}).Infof("[BSC] route %s -> %s", r.RemoteAddr, unescape)
 	})
 }
 

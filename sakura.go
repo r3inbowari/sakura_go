@@ -15,43 +15,17 @@ import (
 // LatestHome /*
 var LatestHome *goquery.Document // 最新主页快照
 var cacheStart time.Time
-var RDB Snapshot
+var RDB *Snapshot
 
 func Init() {
-	Blue("                                  ______             _            ")
-	Blue("                                 |  ____|           (_)           ")
-	Blue("  _ __ ___   ___  _ __ ___   ___ | |__   _ __   __ _ _ _ __   ___ ")
-	Blue(" | '_ ` _ \\ / _ \\| '_ ` _ \\ / _ \\|  __| | '_ \\ / _` | | '_ \\ / _ \\")
-	Blue(" | | | | | | (_) | | | | | | (_) | |____| | | | (_| | | | | |  __/")
-	Blue(" |_| |_| |_|\\___/|_| |_| |_|\\___/|______|_| |_|\\__, |_|_| |_|\\___|")
-	Blue("                                                __/ |             ")
-	Blue("                                               |___/              ")
-
-	Blue(" -- --- -- --- . -. --. .. -. . version: 1.0.3 author: r3inbowari")
-	Blue("")
 	Log.Info("[SYS] system init")
-
 	Log.Info("[NETWORK TEST] " + RedirectURL("https://gss3.baidu.com/6LZ0ej3k1Qd3ote6lo7D0j9wehsv/tieba-smallvideo/607272_11d5cad2110530c892f7248946ebe51b.mp4"))
 	Log.Info("[NETWORK TEST] " + RedirectURL("http://quan.qq.com/video/1098_45b8f3ce393c72e8b8ebabee02fed632"))
-
-
-
-	Log.Info("[AUTH] invenleey.oicp.net verified")
-	Log.Info("[CMD] Debug Level -> INFO")
 
 	RDB = InitCacheService()
 	RDB.UseCache()
 
-	server := NewServer()
-	server.Map("/rank", rank)
-	server.Map("/week/{index}", week)
-	server.Map("/last", last)
-	server.Map("/search", search)
-	server.Map("/detail", detail)
-	server.Map("/play", play)
-	//server.useGlobalCORS()
-	//server.useLog()
-	server.start()
+	CLIApplication()
 }
 
 type RequestResult struct {

@@ -14,7 +14,7 @@ type Snapshot struct {
 	ctx context.Context
 }
 
-func InitCacheService() Snapshot {
+func InitCacheService() *Snapshot {
 	var sp = Snapshot{}
 	sp.ctx = context.Background()
 	sp.rdb = redis.NewClient(&redis.Options{
@@ -23,11 +23,19 @@ func InitCacheService() Snapshot {
 		DB:       0,
 	})
 	Log.Info("[Cache] Redis pre-connected -> " + GetConfig(false).RedisURL)
-	return sp
+	return &sp
 }
 
 func (s *Snapshot) Set(key, value string) error {
 	err := s.rdb.Set(s.ctx, key, value, 0).Err()
+	return err
+}
+
+func (s *Snapshot) SetEx(key, value string, ex time.Duration) error {
+	cacheStart = time.Now()
+	err := s.rdb.Set(s.ctx, key, value, ex).Err()
+	spend := time.Now().UnixNano() - cacheStart.UnixNano()
+	Log.Info("[Cache] play link snapshot | " + strconv.Itoa(int(spend)/1e6) + "ms")
 	return err
 }
 
@@ -44,9 +52,9 @@ func (s *Snapshot) Get(key string) (string, error) {
 
 func (s *Snapshot) UseCache() {
 	Log.Info("[Cache] Cache service OPEN")
-	HomepageSnapshotCron()
+	DMSakuraHomepageSnapshotCron()
 	c := cron.New()
-	_ = c.AddFunc("0 */10 * * * ?", HomepageSnapshotCron)
+	_ = c.AddFunc("0 */10 * * * ?", DMSakuraHomepageSnapshotCron)
 	c.Start()
 }
 

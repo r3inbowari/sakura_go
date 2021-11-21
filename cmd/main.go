@@ -21,10 +21,11 @@ var mode = "DEV"
 
 func main() {
 	dev()
+	Sakura.InitConfig()
 	Sakura.InitUpdate(buildTime, mode, releaseVersion, gitHash, major, minor, patch, "sakura", nil)
 	Sakura.InitLogger(Sakura.Up.BuildMode, AppInfo)
-	//Sakura.Init()
-	//select {}
+
+	Sakura.Init()
 }
 
 func dev() {
@@ -46,4 +47,5 @@ func AppInfo() {
 	Sakura.Blue(" |_| |_| |_|\\___/|_| |_| |_|\\___/|______|_| |_|\\__, |_|_| |_|\\___|     PID: " + strconv.Itoa(os.Getpid()))
 	Sakura.Blue("                                                __/ |                  built on " + Sakura.Up.BuildTime)
 	Sakura.Blue("                                               |___/              ")
+	Sakura.Blue("")
 }

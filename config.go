@@ -22,6 +22,19 @@ type LocalConfig struct {
 	RedisPass   string    `json:"redis_pass"`
 }
 
+func InitConfig() {
+	if !Exists("bili.json") {
+		Log.Info("[FILE] Init user configuration")
+		var config LocalConfig
+		var l = "debug"
+		config.Finger = "532ca3dd-2104-4799-8fd2-9f4b16e5cdc9"
+		config.LoggerLevel = &l
+		config.APIAddr = ":9090"
+		config.AutoUpdate = true
+		_ = config.SetConfig()
+	}
+}
+
 var config = new(LocalConfig)
 var configPath = "bili.json"
 
