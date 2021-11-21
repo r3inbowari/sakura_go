@@ -173,7 +173,7 @@ func GetPlaySrc(id string, num int) string {
 
 	defer func() {
 		if e := recover(); e != nil {
-			Warn("[INFO] 地址解析失败: url")
+			Log.Warn("[INFO] 地址解析失败: url")
 		}
 	}()
 

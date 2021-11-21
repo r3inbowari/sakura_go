@@ -5,18 +5,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"sync"
 )
 
-/*
- * 重定向地址变换
- * @param baseURL origin visit url
- */
+// RedirectURL 重定向地址变换
 func RedirectURL(baseURL string) string {
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -36,29 +35,25 @@ func RedirectURL(baseURL string) string {
 	}
 }
 
-/**
- * MD5生成
- */
+// GetMD5 md5
 func GetMD5(str string) string {
 	h := md5.New()
 	h.Write([]byte(str))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-/**
- * 搜索结果带缓存
- */
+// SearchDoc 搜索
 var SearchDoc sync.Map
 
 func GetSearchResult(url string) *goquery.Document {
 	md5Stream := GetMD5(url)
 	if v, ok := SearchDoc.Load(md5Stream); ok {
-		Info("[Cache] found a snapshot -> " + url)
+		Log.Info("[Cache] found a snapshot -> " + url)
 		return v.(*goquery.Document)
 	}
 	doc, _ := goquery.NewDocument(url)
 	SearchDoc.Store(md5Stream, doc)
-	Info("[Cache] snapshot saved -> " + url)
+	Log.Info("[Cache] snapshot saved -> " + url)
 	return doc
 }
 
@@ -78,18 +73,14 @@ func CreateUUID() string {
 	return u1.String()
 }
 
-/**
- * md5生成
- */
+// CreateMD5 md
 func CreateMD5(str string) string {
 	h := md5.New()
 	h.Write([]byte(str))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-/**
- * 序列化json
- */
+// JsonBind bind
 func JsonBind(ptr interface{}, rq *http.Request) error {
 	if rq.Body != nil {
 		defer rq.Body.Close()
@@ -103,9 +94,7 @@ func JsonBind(ptr interface{}, rq *http.Request) error {
 	}
 }
 
-/*
- * 重定向检查
- */
+// CheckURL 重定向检查
 func CheckURL(baseHost string) string {
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -123,4 +112,18 @@ func CheckURL(baseHost string) string {
 		}
 		baseHost = res.Header.Get("Location")
 	}
+}
+
+func ResponseCommon(w http.ResponseWriter, data interface{}, msg string, total int, tag int, code int) {
+	var rq RequestResult
+	rq.Data = data
+	rq.Total = total
+	rq.Code = code
+	rq.Message = msg
+	jsonStr, err := json.Marshal(rq)
+	if err != nil {
+		Log.WithFields(logrus.Fields{"err": err.Error()}).Error("response error")
+	}
+	w.WriteHeader(tag)
+	_, _ = fmt.Fprintf(w, string(jsonStr))
 }

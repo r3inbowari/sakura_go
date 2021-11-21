@@ -29,15 +29,15 @@ func Init() {
 
 	Blue(" -- --- -- --- . -. --. .. -. . version: 1.0.3 author: r3inbowari")
 	Blue("")
-	Info("[SYS] system init")
+	Log.Info("[SYS] system init")
 
-	Info("[NETWORK TEST] " + RedirectURL("https://gss3.baidu.com/6LZ0ej3k1Qd3ote6lo7D0j9wehsv/tieba-smallvideo/607272_11d5cad2110530c892f7248946ebe51b.mp4"))
-	Info("[NETWORK TEST] " + RedirectURL("http://quan.qq.com/video/1098_45b8f3ce393c72e8b8ebabee02fed632"))
+	Log.Info("[NETWORK TEST] " + RedirectURL("https://gss3.baidu.com/6LZ0ej3k1Qd3ote6lo7D0j9wehsv/tieba-smallvideo/607272_11d5cad2110530c892f7248946ebe51b.mp4"))
+	Log.Info("[NETWORK TEST] " + RedirectURL("http://quan.qq.com/video/1098_45b8f3ce393c72e8b8ebabee02fed632"))
 
-	InitConfig()
 
-	Info("[AUTH] invenleey.oicp.net verified")
-	Info("[CMD] Debug Level -> INFO")
+
+	Log.Info("[AUTH] invenleey.oicp.net verified")
+	Log.Info("[CMD] Debug Level -> INFO")
 
 	RDB = InitCacheService()
 	RDB.UseCache()
@@ -49,15 +49,15 @@ func Init() {
 	server.Map("/search", search)
 	server.Map("/detail", detail)
 	server.Map("/play", play)
-	server.useGlobalCORS()
-	server.useLog()
+	//server.useGlobalCORS()
+	//server.useLog()
 	server.start()
 }
 
 type RequestResult struct {
-	Total   int         `json:"total"`
-	Result  interface{} `json:"result"`
-	Code    int         `json:"code"`
+	Total int         `json:"total"`
+	Data  interface{} `json:"data"`
+	Code  int         `json:"code"`
 	Message string      `json:"msg"`
 }
 
@@ -82,7 +82,7 @@ func week(w http.ResponseWriter, r *http.Request) {
 		ab := WeekUpdate(c)
 		resultSucceed(w, ab, 1)
 	} else {
-		Warn("[API] apply error param")
+		Log.Warn("[API] apply error param")
 		requestError(w)
 	}
 	return
@@ -99,7 +99,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 		ab, ba := SearchBangumi(keyword, p+1)
 		resultSucceed(w, ab, ba)
 	} else {
-		Warn("[API] apply error param")
+		Log.Warn("[API] apply error param")
 		requestError(w)
 	}
 }
@@ -128,7 +128,7 @@ func play(w http.ResponseWriter, r *http.Request) {
 
 func requestFailed(w http.ResponseWriter) {
 	var rq RequestResult
-	rq.Result = nil
+	rq.Data = nil
 	rq.Total = 0
 	rq.Code = 1
 	rq.Message = "missing param"
@@ -142,7 +142,7 @@ func requestFailed(w http.ResponseWriter) {
 
 func requestError(w http.ResponseWriter) {
 	var rq RequestResult
-	rq.Result = nil
+	rq.Data = nil
 	rq.Total = 0
 	rq.Code = 1
 	rq.Message = "error request"
@@ -156,7 +156,7 @@ func requestError(w http.ResponseWriter) {
 
 func resultSucceed(w http.ResponseWriter, bangumi interface{}, total int) {
 	var rq RequestResult
-	rq.Result = bangumi
+	rq.Data = bangumi
 	rq.Total = total
 	rq.Code = 0
 	rq.Message = "succeed"

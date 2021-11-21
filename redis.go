@@ -18,11 +18,11 @@ func InitCacheService() Snapshot {
 	var sp = Snapshot{}
 	sp.ctx = context.Background()
 	sp.rdb = redis.NewClient(&redis.Options{
-		Addr:     GetConfig().RedisURL,
-		Password: GetConfig().RedisPass,
+		Addr:     GetConfig(false).RedisURL,
+		Password: GetConfig(false).RedisPass,
 		DB:       0,
 	})
-	Info("[Cache] Redis pre-connected -> " + GetConfig().RedisURL)
+	Log.Info("[Cache] Redis pre-connected -> " + GetConfig(false).RedisURL)
 	return sp
 }
 
@@ -43,7 +43,7 @@ func (s *Snapshot) Get(key string) (string, error) {
 }
 
 func (s *Snapshot) UseCache() {
-	Info("[Cache] Cache service OPEN")
+	Log.Info("[Cache] Cache service OPEN")
 	HomepageSnapshotCron()
 	c := cron.New()
 	_ = c.AddFunc("0 */10 * * * ?", HomepageSnapshotCron)
@@ -55,8 +55,8 @@ func HomepageSnapshotCron() {
 	var err error
 	LatestHome, err = goquery.NewDocument("http://www.yhdm.tv")
 	if err != nil {
-		Warn("[Cache] cache pull failed")
+		Log.Warn("[Cache] cache pull failed")
 	}
 	spend := time.Now().UnixNano() - cacheStart.UnixNano()
-	Info("[Cache] Homepage snapshot | " + strconv.Itoa(int(spend)/1e6) + "ms")
+	Log.Info("[Cache] Homepage snapshot | " + strconv.Itoa(int(spend)/1e6) + "ms")
 }
