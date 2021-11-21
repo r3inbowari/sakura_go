@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 )
 
 // RedirectURL 重定向地址变换
@@ -45,16 +46,37 @@ func GetMD5(str string) string {
 // SearchDoc 搜索
 var SearchDoc sync.Map
 
-func GetSearchResult(url string) *goquery.Document {
+func GetSearchResult(url string) (*goquery.Document, error) {
 	md5Stream := GetMD5(url)
 	if v, ok := SearchDoc.Load(md5Stream); ok {
-		Log.Info("[Cache] found a snapshot -> " + url)
-		return v.(*goquery.Document)
+		// Log.Info("[Cache] found a snapshot -> " + url)
+		return v.(*goquery.Document), nil
 	}
-	doc, _ := goquery.NewDocument(url)
-	SearchDoc.Store(md5Stream, doc)
-	Log.Info("[Cache] snapshot saved -> " + url)
-	return doc
+	var d *goquery.Document
+	err := QueryGet(url, func(doc *goquery.Document) error {
+		d = doc
+		AddCache(md5Stream, doc)
+		return nil
+	})
+	if err != nil {
+		return nil, nil
+	}
+	return d, nil
+}
+
+func AddCache(id string, v interface{}) {
+	SearchDoc.Store(id, v)
+	err := GetTimeWheel().AddTask(time.Minute*10, 1, id, TaskData{"id": id}, CleanTask)
+	if err != nil {
+		Log.WithFields(logrus.Fields{"id": id}).Warn("[Cache] add task failed...")
+	}
+	Log.WithFields(logrus.Fields{"id": id}).Info("[Cache] snapshot cache generated")
+}
+
+func CleanTask(data TaskData) {
+	id := data["id"]
+	SearchDoc.Delete(id)
+	Log.WithFields(logrus.Fields{"id": id}).Info("[Cache] clean timeout cache")
 }
 
 func Exists(path string) bool {

@@ -26,12 +26,12 @@ func InitCacheService() *Snapshot {
 	return &sp
 }
 
-func (s *Snapshot) Set(key, value string) error {
+func (s *Snapshot) Set(key string, value interface{}) error {
 	err := s.rdb.Set(s.ctx, key, value, 0).Err()
 	return err
 }
 
-func (s *Snapshot) SetEx(key, value string, ex time.Duration) error {
+func (s *Snapshot) SetEx(key string, value interface{}, ex time.Duration) error {
 	cacheStart = time.Now()
 	err := s.rdb.Set(s.ctx, key, value, ex).Err()
 	spend := time.Now().UnixNano() - cacheStart.UnixNano()

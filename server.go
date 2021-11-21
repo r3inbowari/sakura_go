@@ -29,6 +29,7 @@ func CLIApplication() {
 	BiliServer.Map("/new", HandleNew)
 	BiliServer.Map("/weeks/{index}", HandleWeeks)
 	BiliServer.Map("/search", HandleSearch)
+	BiliServer.Map("/detail/{id}", HandleDetail)
 	BiliServer.router.Use(loggingMiddleware)
 	err := BiliServer.start()
 	if strings.HasSuffix(err.Error(), "normally permitted.") || strings.Index(err.Error(), "bind") != -1 {

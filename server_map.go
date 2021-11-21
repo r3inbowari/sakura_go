@@ -61,3 +61,10 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		ResponseCommon(w, "apply error param", "ok", 1, http.StatusOK, 0)
 	}
 }
+
+func HandleDetail(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	ret := DMSakuraDetail(id)
+	ResponseCommon(w, ret, "ok", 1, http.StatusOK, 0)
+}

@@ -22,8 +22,8 @@ func Init() {
 }
 
 type RequestResult struct {
-	Total int         `json:"total"`
-	Data  interface{} `json:"data"`
-	Code  int         `json:"code"`
+	Total   int         `json:"total"`
+	Data    interface{} `json:"data"`
+	Code    int         `json:"code"`
 	Message string      `json:"msg"`
 }

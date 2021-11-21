@@ -75,7 +75,7 @@ func WeekUpdate(w int) []Bangumi {
 
 // 关键字搜索0
 func SearchBangumi(keyword string, page int) ([]Bangumi, int) {
-	doc := GetSearchResult("http://www.yhdm.tv/search/" + keyword + "/?page=" + strconv.Itoa(page))
+	doc, _ := GetSearchResult("http://www.yhdm.tv/search/" + keyword + "/?page=" + strconv.Itoa(page))
 	a := doc.Find(".lpic").Find("li")
 	var sbs []Bangumi
 	a.Each(func(i int, selection *goquery.Selection) {
@@ -106,7 +106,7 @@ func SearchBangumi(keyword string, page int) ([]Bangumi, int) {
 
 // 关键字搜索1
 func SearchBangumi1(keyword string, page int) ([]Bangumi, int) {
-	doc := GetSearchResult("http://www.yhdm.tv/search/" + keyword + "/?page=" + strconv.Itoa(page))
+	doc, _ := GetSearchResult("http://www.yhdm.tv/search/" + keyword + "/?page=" + strconv.Itoa(page))
 	a := doc.Find(".lpic").Find("li")
 	var sbs []Bangumi
 	a.Each(func(i int, selection *goquery.Selection) {
@@ -137,7 +137,7 @@ func SearchBangumi1(keyword string, page int) ([]Bangumi, int) {
 
 // 详细页
 func DetailBangumi(id string) Bangumi {
-	doc := GetSearchResult("http://www.yhdm.tv/show/" + id + ".html")
+	doc, _ := GetSearchResult("http://www.yhdm.tv/show/" + id + ".html")
 	// doc, _ := goquery.NewDocument("http://www.yhdm.tv/show/" + id + ".html")
 	pInfo := doc.Find(".sinfo").Find("p")
 	var sb Bangumi
@@ -164,7 +164,7 @@ func DetailBangumi(id string) Bangumi {
 // 播放地址
 func GetPlaySrc(id string, num int) string {
 	url := "http://www.yhdm.tv/v/" + id + "-" + strconv.Itoa(num) + ".html"
-	doc := GetSearchResult(url)
+	doc, _ := GetSearchResult(url)
 	if doc == nil {
 		SearchDoc.Delete(url)
 		return ""
@@ -182,7 +182,7 @@ func GetPlaySrc(id string, num int) string {
 }
 
 func (sb *Bangumi) BangumiDetail() error {
-	doc := GetSearchResult("http://www.yhdm.tv/show/" + sb.ID + ".html")
+	doc, _ := GetSearchResult("http://www.yhdm.tv/show/" + sb.ID + ".html")
 	pInfo := doc.Find(".sinfo").Find("p")
 	if pInfo.Size() > 1 {
 		sb.Alias = strings.TrimLeft(pInfo.First().Text(), "别名:")

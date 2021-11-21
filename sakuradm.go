@@ -36,9 +36,32 @@ type Bangumi struct {
 
 var DMSakuraHost = "https://www.sakuradm.tv/"
 
+type Detail struct {
+	SrcList []int  `json:"src_list"`
+	Desc    string `json:"desc"`
+}
+
+func DMSakuraDetail(id string) *Detail {
+	doc, err := GetSearchResult(fmt.Sprintf("%svoddetail/%s.html", DMSakuraHost, id))
+	if err != nil {
+		Log.Error("[API] error request")
+		return nil
+	}
+	var ret Detail
+	doc.Find(".movurl").Each(func(i int, selection *goquery.Selection) {
+		ret.SrcList = append(ret.SrcList, selection.Find("li").Size())
+	})
+	ret.Desc = doc.Find(".fire.l").Find(".info").Find("p").First().Text()
+	return &ret
+}
+
 // DMSakuraSearch 关键字搜索0
 func DMSakuraSearch(keyword string, page int) ([]Bangumi, int) {
-	doc := GetSearchResult(fmt.Sprintf("%svodsearch/page/%d/wd/%s.html", DMSakuraHost, page, keyword))
+	doc, err := GetSearchResult(fmt.Sprintf("%svodsearch/page/%d/wd/%s.html", DMSakuraHost, page, keyword))
+	if err != nil {
+		Log.Error("[API] error request")
+		return nil, 0
+	}
 	a := doc.Find(".fire").Find("li")
 	var sbs []Bangumi
 	a.Each(func(i int, selection *goquery.Selection) {
@@ -135,7 +158,7 @@ func DMSakuraHomepageSnapshotCron() {
 		Log.Warn("[Cache] cache pull failed")
 	}
 	spend := time.Now().UnixNano() - cacheStart.UnixNano()
-	Log.Info("[Cache] Homepage snapshot | " + strconv.Itoa(int(spend)/1e6) + "ms")
+	Log.Info("[Cache] Homepage snapshot generated | " + strconv.Itoa(int(spend)/1e6) + "ms")
 }
 
 func (p *Player) DMSakuraGetPlayer() error {
