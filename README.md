@@ -37,6 +37,10 @@ http://r3in.top:9091/detail/fanrenxiuxianchuan
 http://r3in.top:9091/play/fanrenxiuxianchuan/1/25
 ```
 
+## 阿里云函数计算   
+
+上传 `release` 中的 `aliyunfc.zip` 即可，如果自己压缩打包则需要注意文件权限问题
+
 ## 其他   
 
 仅供参考
