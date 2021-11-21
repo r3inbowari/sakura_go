@@ -22,6 +22,18 @@ type Player struct {
 	From     string `json:"from"`
 }
 
+type Bangumi struct {
+	Title     string   `json:"title"`
+	DetailURL string   `json:"detailURL"`
+	Cover     string   `json:"cover"`
+	Detail    string   `json:"detail"`
+	Update    string   `json:"update"`
+	Count     int      `json:"count"`
+	Type      []string `json:"type"`
+	Alias     string   `json:"alias"`
+	ID        string   `json:"id"`
+}
+
 var DMSakuraHost = "https://www.sakuradm.tv/"
 
 // DMSakuraSearch 关键字搜索0

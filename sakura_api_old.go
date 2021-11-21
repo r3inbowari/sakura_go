@@ -201,15 +201,3 @@ func (sb *Bangumi) BangumiDetail() error {
 	})
 	return nil
 }
-
-type Bangumi struct {
-	Title     string   `json:"title"`
-	DetailURL string   `json:"detailURL"`
-	Cover     string   `json:"cover"`
-	Detail    string   `json:"detail"`
-	Update    string   `json:"update"`
-	Count     int      `json:"count"`
-	Type      []string `json:"type"`
-	Alias     string   `json:"alias"`
-	ID        string   `json:"id"`
-}
