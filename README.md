@@ -16,7 +16,7 @@ http://r3in.top:9091/new
 http://r3in.top:9091/weeks/{0-6}
 
 关键字搜索
-http://r3in.top:9091/search/{page}/{keyword}
+http://r3in.top:9091/search?page={page}&keyword={keyword}
 
 详细
 http://r3in.top:9091/detail/{id}
@@ -32,7 +32,7 @@ http://r3in.top:9091/version
 http://r3in.top:9091/rank
 http://r3in.top:9091/new
 http://r3in.top:9091/weeks/6
-http://r3in.top:9091/search/1/凡人修仙传
+http://r3in.top:9091/search?page=1&keyword=凡人修仙传
 http://r3in.top:9091/detail/fanrenxiuxianchuan
 http://r3in.top:9091/play/fanrenxiuxianchuan/1/25
 ```
