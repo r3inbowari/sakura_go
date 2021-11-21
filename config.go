@@ -31,6 +31,8 @@ func InitConfig() {
 		config.LoggerLevel = &l
 		config.APIAddr = ":9090"
 		config.AutoUpdate = true
+		config.RedisPass = "123456789"
+		config.RedisURL = "123.org"
 		_ = config.SetConfig()
 	}
 }
